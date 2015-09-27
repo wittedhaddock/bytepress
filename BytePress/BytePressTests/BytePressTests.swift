@@ -6,8 +6,8 @@
 //  Copyright (c) 2015 caffeine. All rights reserved.
 //
 
-import UIKit
 import XCTest
+import BytePress
 
 class BytePressTests: XCTestCase {
     
@@ -21,9 +21,15 @@ class BytePressTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        XCTAssert(true, "Pass")
+    func testPackString() {
+         do {
+            
+        try let bytes BPMsgPack.pack("pack me now")
+        } catch {
+            
+        }
+            print(bytes)
+        
     }
     
     func testPerformanceExample() {
