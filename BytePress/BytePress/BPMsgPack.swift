@@ -16,24 +16,28 @@ public class BPMsgPack {
         case _ where item is String:
             do {
                 try packString(item as! String, bytesReceivingPackage: &bytes)
-                
-            } catch BytePressError.BadMagic(0x0){
-                print("bad mojo!")
             }
-
             break
-        default:
-            print("illegit")
+        case _ where item is Bool:
+            try packBool(item as! Bool, bytesReceivingPackage: &bytes)
+            break
             
+        default:
+            throw BytePressError.BadMagic(item)
         }
-        
         return bytes
-        
+    }
+    
+    private class func packBool(value: Bool, inout bytesReceivingPackage: [UInt8]) throws {
+        guard bytesReceivingPackage.count < 1 else {
+            throw BytePressError.ArrayOutOfBounds(0, bytesReceivingPackage.count)
+        }
+        bytesReceivingPackage.append(value ? 0xc3 : 0xc2)
     }
     
     private class func packString(string: String, inout bytesReceivingPackage: [UInt8]) throws  {
         guard false else {
-            throw BytePressError.BadMagic(0x0)
+            throw BytePressError.BadMagic(0xC)
         }
         
     }

@@ -7,7 +7,7 @@
 //
 
 enum BytePressError : ErrorType{
-    case BadMagic(UInt8) //The byte array uses an unknown msgpack type
+    case BadMagic(Any) //The byte array uses an unknown msgpack type
     
     case BadLength(Int, Int) //A msgpack datastructure purports to be X bytes long, but only Y bytes exist
     //alternatively, you're trying to pack something that cannot be stored in MsgPack due to exceeding a length requirement
