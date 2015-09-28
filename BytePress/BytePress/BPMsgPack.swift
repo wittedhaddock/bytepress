@@ -18,7 +18,7 @@ public class BPMsgPack {
                 try packString(item as! String, bytesReceivingPackage: &bytes)
                 
             } catch BytePressError.BadMagic(0x0){
-                    
+                print("bad mojo!")
             }
 
             break
@@ -32,8 +32,9 @@ public class BPMsgPack {
     }
     
     private class func packString(string: String, inout bytesReceivingPackage: [UInt8]) throws  {
-        if true {
-            throw BytePressError.BadMagic(0x3)
+        guard false else {
+            throw BytePressError.BadMagic(0x0)
         }
+        
     }
 }

@@ -22,14 +22,8 @@ class BytePressTests: XCTestCase {
     }
     
     func testPackString() {
-         do {
-            
-        try let bytes BPMsgPack.pack("pack me now")
-        } catch {
-            
-        }
-            print(bytes)
-        
+         let packedString = try? BPMsgPack.pack("don't pack me")
+         print(packedString)
     }
     
     func testPerformanceExample() {
