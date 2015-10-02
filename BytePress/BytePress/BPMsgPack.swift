@@ -21,7 +21,9 @@ public class BPMsgPack {
         case _ where item is Bool:
             try packBool(item as! Bool, bytesReceivingPackage: &bytes)
             break
+        case _ where item is Int:
             
+            break
         default:
             throw BytePressError.BadMagic(item)
         }
@@ -33,6 +35,26 @@ public class BPMsgPack {
             throw BytePressError.ArrayOutOfBounds(0, bytesReceivingPackage.count)
         }
         bytesReceivingPackage.append(value ? 0xc3 : 0xc2)
+    }
+    
+    private class func packInt(value: Int, inout bytesReceivingPackage: [UInt8]) throws {
+
+        switch value{
+        case -32..<0, 0...127:
+            bytesReceivingPackage = [UInt8(value)]
+            break
+        case Int(Int8.min)...Int(Int8.max):
+            bytesReceivingPackage = [0xd0, UInt8(value)]
+            break
+        case Int(Int16.min)...Int(Int16.max):
+            bytesReceivingPackage = [0xd1] + unsafeBitCast(value, [UInt8].self)
+            break
+        case Int(Int32.min)...Int(Int32.max):
+            break
+        default:
+            break
+        }
+
     }
     
     private class func packString(string: String, inout bytesReceivingPackage: [UInt8]) throws  {
