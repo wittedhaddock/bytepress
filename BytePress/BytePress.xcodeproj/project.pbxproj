@@ -12,6 +12,7 @@
 		9B3F51511BA4A41000B2DF9E /* BytePressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3F51501BA4A41000B2DF9E /* BytePressTests.swift */; };
 		9B4D96771BB83FC7003D3183 /* BPError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B4D96761BB83FC7003D3183 /* BPError.swift */; };
 		9B557AC11BAD06260063144D /* BytePressType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B557AC01BAD06260063144D /* BytePressType.swift */; };
+		9BEA44861BC5E465009DB1AB /* BPMsgUnpack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEA44851BC5E465009DB1AB /* BPMsgUnpack.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +35,7 @@
 		9B3F51501BA4A41000B2DF9E /* BytePressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BytePressTests.swift; sourceTree = "<group>"; };
 		9B4D96761BB83FC7003D3183 /* BPError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BPError.swift; sourceTree = "<group>"; };
 		9B557AC01BAD06260063144D /* BytePressType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BytePressType.swift; sourceTree = "<group>"; };
+		9BEA44851BC5E465009DB1AB /* BPMsgUnpack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BPMsgUnpack.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +82,7 @@
 				9B3F51381BA4A41000B2DF9E /* Supporting Files */,
 				9B557AC01BAD06260063144D /* BytePressType.swift */,
 				9B4D96761BB83FC7003D3183 /* BPError.swift */,
+				9BEA44851BC5E465009DB1AB /* BPMsgUnpack.swift */,
 			);
 			path = BytePress;
 			sourceTree = "<group>";
@@ -212,6 +215,7 @@
 				9B3F513B1BA4A41000B2DF9E /* AppDelegate.swift in Sources */,
 				9B3F513D1BA4A41000B2DF9E /* BPMsgPack.swift in Sources */,
 				9B557AC11BAD06260063144D /* BytePressType.swift in Sources */,
+				9BEA44861BC5E465009DB1AB /* BPMsgUnpack.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

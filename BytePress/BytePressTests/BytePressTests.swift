@@ -29,7 +29,11 @@ class BytePressTests: XCTestCase {
     func testPackBool() {
         let packedBool = try? BPMsgPack.pack(false)
         print( "my bool \(packedBool)")
-        
+    }
+    
+    func testPackInt() {
+        let packedInt = try? BPMsgPack.pack(Int(Int32.max))
+        print("my packed int: \(packedInt)")
     }
     
     func testPerformanceExample() {
