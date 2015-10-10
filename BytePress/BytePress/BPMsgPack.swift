@@ -17,16 +17,12 @@ public class BPMsgPack {
             do {
                 try packString(item as! String, bytesReceivingPackage: &bytes)
             }
-            break
         case _ where item is Bool:
             try packBool(item as! Bool, bytesReceivingPackage: &bytes)
-            break
         case _ where item is UInt:
             try packUInt(item as! UInt, bytesReceivingPackage: &bytes)
-            break
         case _ where item is Int:
             try packInt(item as! Int, bytesReceivingPackage: &bytes)
-            break
         default:
             throw BytePressError.BadMagic(item)
         }
@@ -53,20 +49,15 @@ public class BPMsgPack {
         case 0...UInt(UInt16.max):
             headerByte = 0xcd
             strideLength = 16 - 8
-            break
         case 0...UInt(UInt32.max):
             headerByte = 0xce
             strideLength = 32 - 8
-            break
         case 0..<UInt(UInt64.max):
             headerByte = 0xcf
             strideLength = 64 - 8
-            break
-            
         default:
             headerByte = 0xc0
             strideLength = 0
-            break;
         }
         
         bytesReceivingPackage = [headerByte] + strideLength.stride(through: 0, by: -8).map({ i in
@@ -89,19 +80,15 @@ public class BPMsgPack {
         case Int(Int16.min)...Int(Int16.max):
             headerByte = value < 0 ? 0xd1 : 0xcd
             strideLength = 8
-            break
         case Int(Int32.min)...Int(Int32.max):
             headerByte = value < 0 ? 0xd2 : 0xce
             strideLength = 16
-            break
         case Int(Int64.min)...Int(Int64.max):
             headerByte = value < 0 ? 0xd3 : 0xcf
             strideLength = 32
-            break
         default:
             strideLength = 0
             headerByte = 0xc0
-            break
         }
         
         bytesReceivingPackage = [headerByte] + strideLength.stride(through: 0, by: -8).map({ i in
