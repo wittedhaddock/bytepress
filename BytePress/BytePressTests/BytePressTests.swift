@@ -32,8 +32,11 @@ class BytePressTests: XCTestCase {
     }
     
     func testPackInt() {
-        let packedInt = try? BPMsgPack.pack(Int(Int32.max))
+        let packedInt = try! BPMsgPack.pack(256)
         print("my packed int: \(packedInt)")
+        let unpackedInt = try? BPMsgUnpack.unpack(packedInt, breadcrumb: "")
+        print("my unpacked int: \(unpackedInt)")
+
     }
     
     func testPerformanceExample() {
