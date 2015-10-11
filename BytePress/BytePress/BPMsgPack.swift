@@ -22,7 +22,17 @@ public class BPMsgPack {
         case _ where item is UInt:
             try packUInt(item as! UInt, bytesReceivingPackage: &bytes)
         case _ where item is Int:
-            try packInt(item as! Int, bytesReceivingPackage: &bytes)
+            if let x = item as? Int {
+                if x > 0 {
+                    try packUInt(UInt(x), bytesReceivingPackage: &bytes)
+                }
+                else {
+                    try packInt(item as! Int, bytesReceivingPackage: &bytes)
+                }
+            }
+            else {
+                throw BytePressError.BadMagic("something bizarre")
+            }
         default:
             throw BytePressError.BadMagic(item)
         }
