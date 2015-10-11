@@ -75,7 +75,6 @@ public class BPMsgPack {
         })
     }
     private class func packInt(value: Int, inout bytesReceivingPackage: [UInt8]) throws {
-        print("max: \(Int8.max), min: \(Int8.min)")
         let headerByte: UInt8
         let strideLength: Int
         switch value{
@@ -92,17 +91,16 @@ public class BPMsgPack {
             strideLength = 8
         case Int(Int32.min)...Int(Int32.max):
             headerByte = value < 0 ? 0xd2 : 0xce
-            strideLength = 16
+            strideLength = 32 - 8
         case Int(Int64.min)...Int(Int64.max):
             headerByte = value < 0 ? 0xd3 : 0xcf
-            strideLength = 32
+            strideLength = 64 - 8
         default:
             strideLength = 0
             headerByte = 0xc0
         }
-        
         bytesReceivingPackage = [headerByte] + strideLength.stride(through: 0, by: -8).map({ i in
-            return UInt8(truncatingBitPattern: value >> i)
+            return UInt8(truncatingBitPattern: (-value >> i))
         })
 
     }

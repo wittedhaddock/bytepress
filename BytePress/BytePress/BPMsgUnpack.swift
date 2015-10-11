@@ -19,15 +19,18 @@ public class BPMsgUnpack {
         switch header {
         case 0...0x7f:
             type = BytePressType.BPInteger(Int(header))
-        case 0xcd:
-            type = try? unpackUInt(data.dropFirst(), length: 1)!
+        case 0xcd...0xcf:
+            type = BytePressType.BPInteger(numericCast(try! unpackInt(data.dropFirst())))
+        case 0xd0...0xd3:
+            type = BytePressType.BPInteger(-1 * numericCast(try! unpackInt(data.dropFirst())))
+            
         default:
             throw BytePressError.BadMagic(data)
         }
         return type!
     }
     
-    private class func unpackUInt<T: SequenceType>(value : T, length: Int) throws -> BytePressType? {
+    private class func unpackInt<T: SequenceType>(value : T) throws -> UInt64 {
         var extracted : UInt64 = 0 // how to match type to param, length, concisely?
         for octet in value {
             if let casted = octet as? UInt8 {
@@ -37,7 +40,7 @@ public class BPMsgUnpack {
                 throw BytePressError.UnsupportedType(octet)
             }
         }
-        return BytePressType.BPInteger(Int(extracted))
+        return extracted
     }
 }
 
