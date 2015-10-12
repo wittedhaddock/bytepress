@@ -31,12 +31,19 @@ class BytePressTests: XCTestCase {
         print( "my bool \(packedBool)")
     }
     
-    func testPackInt() {
-        let packedInt = try! BPMsgPack.pack(256)
+    func testPackNegativeInt() {
+        let min16 = -256 << 16
+        let packedInt = try! BPMsgPack.pack(min16)
         print("my packed int: \(packedInt)")
-        let unpackedInt = try? BPMsgUnpack.unpack(packedInt, breadcrumb: "")
+        let unpackedInt = try! BPMsgUnpack.unpack(packedInt, breadcrumb: "")
         print("my unpacked int: \(unpackedInt)")
-
+        switch unpackedInt{
+        case .BPInteger(let i):
+            XCTAssert(i == min16, "\(unpackedInt) does not equal \(min16)")
+        default:
+            XCTAssert(false, "what even is \(unpackedInt)")
+        }
+       
     }
     
     func testPerformanceExample() {
