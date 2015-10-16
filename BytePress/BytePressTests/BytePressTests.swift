@@ -31,6 +31,14 @@ class BytePressTests: XCTestCase {
         print( "my bool \(packedBool)")
     }
     
+    func testPackPositiveFloat() {
+        let fl = 5000.5 
+        let packed = try! BPMsgPack.pack(fl)
+        
+        let newFL = pow(2, 32) as Double
+    }
+    
+    
     func testPackNegativeInt() {
         let min16 = -256 << 16
         let packedInt = try! BPMsgPack.pack(min16)

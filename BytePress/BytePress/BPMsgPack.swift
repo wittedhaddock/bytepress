@@ -33,6 +33,11 @@ public class BPMsgPack {
             else {
                 throw BytePressError.BadMagic("something bizarre")
             }
+        case _ where item is Float:
+            try packUInt(UInt(unsafeBitCast(item as! Float, UInt32.self)), bytesReceivingPackage: &bytes)
+        case _ where item is Double:
+            
+            try packUInt(UInt(unsafeBitCast(item as! Double, UInt64.self)), bytesReceivingPackage: &bytes)
         default:
             throw BytePressError.BadMagic(item)
         }
@@ -103,6 +108,10 @@ public class BPMsgPack {
             return UInt8(truncatingBitPattern: (-value >> i))
         })
 
+    }
+    
+    private class func packFloat(value: Float, inout bytesReceivingPackage: [UInt8]) throws {
+        
     }
     
     private class func packString(string: String, inout bytesReceivingPackage: [UInt8]) throws  {
