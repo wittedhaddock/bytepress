@@ -34,10 +34,9 @@ public class BPMsgPack {
                 throw BytePressError.BadMagic("something bizarre")
             }
         case _ where item is Float:
-            try packUInt(UInt(unsafeBitCast(item as! Float, UInt32.self)), bytesReceivingPackage: &bytes)
+            try packUInt(UInt(unsafeBitCast(item as! Float, UInt32.self)), bytesReceivingPackage: &bytes, overridingHeaderByte: 0xca)
         case _ where item is Double:
-            
-            try packUInt(UInt(unsafeBitCast(item as! Double, UInt64.self)), bytesReceivingPackage: &bytes)
+            try packUInt(UInt(unsafeBitCast(item as! Double, UInt64.self)), bytesReceivingPackage: &bytes, overridingHeaderByte: 0xcb)
         default:
             throw BytePressError.BadMagic(item)
         }
@@ -51,7 +50,7 @@ public class BPMsgPack {
         bytesReceivingPackage.append(value ? 0xc3 : 0xc2)
     }
     
-    private class func packUInt(value: UInt, inout bytesReceivingPackage: [UInt8]) throws {
+    private class func packUInt(value: UInt, inout bytesReceivingPackage: [UInt8], overridingHeaderByte:UInt8 = 0xc0) throws {
         let headerByte: UInt8
         let strideLength: UInt
         switch value {
@@ -75,7 +74,7 @@ public class BPMsgPack {
             strideLength = 0
         }
         
-        bytesReceivingPackage = [headerByte] + strideLength.stride(through: 0, by: -8).map({ i in
+        bytesReceivingPackage = [overridingHeaderByte == 0xc0 ? headerByte : overridingHeaderByte] + strideLength.stride(through: 0, by: -8).map({ i in
             return UInt8(truncatingBitPattern: value >> i)
         })
     }

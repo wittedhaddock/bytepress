@@ -23,7 +23,10 @@ public class BPMsgUnpack {
             type = BytePressType.BPInteger(numericCast(try! unpackInt(data.dropFirst())))
         case 0xd0...0xd3:
             type = BytePressType.BPInteger(-1 * numericCast(try! unpackInt(data.dropFirst())))
-            
+        case 0xca:
+            type = BytePressType.BPFloat(unsafeBitCast(try! unpackInt(data.dropFirst()), Float.self))
+        case 0xcb:
+            type = BytePressType.BPDouble(unsafeBitCast(try! unpackInt(data.dropFirst()), Double.self))
         default:
             throw BytePressError.BadMagic(data)
         }
@@ -43,4 +46,3 @@ public class BPMsgUnpack {
         return extracted
     }
 }
-

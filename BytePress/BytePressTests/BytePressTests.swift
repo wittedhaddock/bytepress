@@ -31,11 +31,16 @@ class BytePressTests: XCTestCase {
         print( "my bool \(packedBool)")
     }
     
-    func testPackPositiveFloat() {
-        let fl = 5000.5 
+    func testPackPositiveDouble() {
+        let fl = 5000.5 //why does it default to 64 bit, when it can be represented as 32 bit?
         let packed = try! BPMsgPack.pack(fl)
-        
-        let newFL = pow(2, 32) as Double
+        let unpacked = try! BPMsgUnpack.unpack(packed, breadcrumb: "")
+        switch unpacked{
+        case .BPDouble(let d):
+            XCTAssert(d == fl)
+        default:
+            XCTAssert(false, "\(unpacked) is interesting")
+        }
     }
     
     
