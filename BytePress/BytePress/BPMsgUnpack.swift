@@ -28,7 +28,7 @@ public class BPMsgUnpack {
         case 0xcb:
             type = BytePressType.BPDouble(unsafeBitCast(try! unpackInt(data.dropFirst()), Double.self))
         case 0b10100000...0b10111111:
-            type = BytePressType.BPString(try! unpackString(data.dropFirst()))
+            type = BytePressType.BPString(try! unpackString(data.dropFirst(), withLength: UInt(header - 0b10100000)))
             
         default:
             throw BytePressError.BadMagic(data)
@@ -49,15 +49,24 @@ public class BPMsgUnpack {
         return extracted
     }
     
-    private class func unpackString<T: SequenceType>(value : T) throws -> String {
-        //fixstring
-        var extracted : UInt = 0
-        for octet in value {
-            if let utf8byte = octet as? UInt8 {
-                extracted = extracted << 8 | numericCast(utf8byte)
-                
+    private class func unpackString<T: SequenceType>(value : T, withLength length: UInt) throws -> String {
+        var arr: [UInt8] = Array<UInt8>()
+        for i in value {
+            arr.append(i as! UInt8) // needs to be changed to a cast
+        }
+        var decoder = UTF8()
+        var generator = arr.generate()
+        var str = ""
+        for _ in 0..<length {
+                switch decoder.decode(&generator) {
+                case .Result(let res):
+                    str.append(res)
+                case .EmptyInput:
+                    print("\(generator) returned empty after decoding attempt!" )
+                case .Error:
+                    print("\(generator) decoding caused error")
             }
         }
-        return "\(extracted)"
+    return str
     }
 }

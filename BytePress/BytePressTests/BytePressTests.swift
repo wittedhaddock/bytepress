@@ -22,8 +22,19 @@ class BytePressTests: XCTestCase {
     }
     
     func testPackString() {
-         let packedString = try? BPMsgPack.pack("don't pack me")
+        let string = "don't fucking pack me"
+         let packedString = try! BPMsgPack.pack(string)
+//        let unpackedString =
          print(packedString)
+        let unpacked = try! BPMsgUnpack.unpack(packedString, breadcrumb: "")
+        switch unpacked{
+        case .BPString(let s):
+            XCTAssert(string == s)
+        default:
+            XCTAssert(false, "\(unpacked) is not equal to \(string)")
+
+        }
+        
     }
     
     func testPackBool() {
