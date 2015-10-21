@@ -9,7 +9,9 @@
 import Swift
 
 extension SequenceType where Generator.Element ==  UInt8{}
-extension CollectionType where Generator.Element == UInt8{}
+extension CollectionType {
+
+}
 
 public class BPMsgUnpack {
     public class func unpack<T: CollectionType where T.Generator.Element == UInt8>(data: T, breadcrumb: String) throws -> BytePressType {
@@ -29,6 +31,20 @@ public class BPMsgUnpack {
             type = BytePressType.BPDouble(unsafeBitCast(try! unpackInt(data.dropFirst()), Double.self))
         case 0b10100000...0b10111111:
             type = BytePressType.BPString(try! unpackString(data.dropFirst(), withLength: UInt(header - 0b10100000)))
+        case 0xd9:
+            let numNonUTFParts = 2
+            let num = data.prefix(numNonUTFParts)
+            //the second byte can just be cast to a UInt8 ... no need to call unpackInt in following expression, in other words
+            type = BytePressType.BPString(try! unpackString(data.dropFirst(numNonUTFParts), withLength: UInt(try! unpackInt(num, ignoreFirstByte: true))))
+        case 0xda:
+            let numNonUTFParts = 3
+            let num = data.prefix(numNonUTFParts)
+            type = BytePressType.BPString(try! unpackString(data.dropFirst(numNonUTFParts), withLength: UInt(try! unpackInt(num, ignoreFirstByte: true))))
+            
+        case 0xdb:
+            let numNonUTFParts = 5
+            let num = data.prefix(numNonUTFParts)
+            type = BytePressType.BPString(try! unpackString(data.dropFirst(numNonUTFParts), withLength: UInt(try! unpackInt(num, ignoreFirstByte: true))))
             
         default:
             throw BytePressError.BadMagic(data)
@@ -36,9 +52,13 @@ public class BPMsgUnpack {
         return type!
     }
     
-    private class func unpackInt<T: SequenceType>(value : T) throws -> UInt64 {
+    private class func unpackInt<T: SequenceType>(value : T, var ignoreFirstByte: Bool = false) throws -> UInt64 {
         var extracted : UInt64 = 0 // how to match type to param, length, concisely?
         for octet in value {
+            if ignoreFirstByte {
+                ignoreFirstByte = false // CODE SMELL ---> prefix.dropfirst call reutrns T.SequenceType.SequenceType and I haven't figured out this idea of recursive type support .. is a sequence of a sequence not still a sequence?
+                continue
+            }
             if let casted = octet as? UInt8 {
                 extracted = extracted << 8 | numericCast(casted)
             }
@@ -52,7 +72,7 @@ public class BPMsgUnpack {
     private class func unpackString<T: SequenceType>(value : T, withLength length: UInt) throws -> String {
         var arr: [UInt8] = Array<UInt8>()
         for i in value {
-            arr.append(i as! UInt8) // needs to be changed to a cast
+            arr.append(i as! UInt8) // needs to be changed to a cast rather than whole new var
         }
         var decoder = UTF8()
         var generator = arr.generate()
@@ -63,6 +83,7 @@ public class BPMsgUnpack {
                     str.append(res)
                 case .EmptyInput:
                     print("\(generator) returned empty after decoding attempt!" )
+                    throw BytePressError.BadMagic("INPUT IS EMPTY")
                 case .Error:
                     print("\(generator) decoding caused error")
             }

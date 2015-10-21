@@ -116,22 +116,18 @@ public class BPMsgPack {
             headerBytes = [0b10100000 | UInt8(count)]
             bytesReceivingPackage = headerBytes + string.utf8
             return
-        case _ where count < 0xff:
+        case _ where count <= 0xff:
             headerBytes = [0xd9]
-            bytesReceivingPackage = headerBytes + [UInt8(count)]
+            bytesReceivingPackage = headerBytes + [UInt8(count)] + string.utf8
             return
-        case _ where count < 0xff_ff:
-            var countByteRepresentation: [UInt8] = Array<UInt8>()
-            try! packUInt(count, bytesReceivingPackage: &countByteRepresentation, overridingHeaderBytes: [0xda])
-            headerBytes = countByteRepresentation
-        case _ where count < 0xff_ff_ff_ff:
-            var countByteRepresentation: [UInt8] = Array<UInt8>()
-            try! packUInt(count, bytesReceivingPackage: &countByteRepresentation, overridingHeaderBytes: [0xdb])
-            headerBytes = countByteRepresentation
+        case _ where count <= 0xff_ff:
+            try! packUInt(count, bytesReceivingPackage: &bytesReceivingPackage, overridingHeaderBytes: [0xda])
+        case _ where count <= 0xff_ff_ff_ff:
+            try! packUInt(count, bytesReceivingPackage: &bytesReceivingPackage, overridingHeaderBytes: [0xdb])
         default:
             throw BytePressError.ArrayOutOfBounds(Int(count), 0)
         }
-        try! packUInt(count, bytesReceivingPackage: &bytesReceivingPackage, overridingHeaderBytes: headerBytes)
         bytesReceivingPackage += string.utf8
+        
     }
 }

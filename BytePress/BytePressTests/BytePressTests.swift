@@ -21,20 +21,62 @@ class BytePressTests: XCTestCase {
         super.tearDown()
     }
     
-    func testPackString() {
+    func testPackFixString() {
         let string = "don't fucking pack me"
-         let packedString = try! BPMsgPack.pack(string)
-//        let unpackedString =
-         print(packedString)
+        let packedString = try! BPMsgPack.pack(string)
+        print(packedString)
         let unpacked = try! BPMsgUnpack.unpack(packedString, breadcrumb: "")
         switch unpacked{
         case .BPString(let s):
             XCTAssert(string == s)
         default:
             XCTAssert(false, "\(unpacked) is not equal to \(string)")
-
         }
-        
+    }
+    
+    func testPackStringOneByte() {
+        let string = "asdfas9df8ajsd9f8ajsd9fajsdfoa4lofijafjap49f8jadfjaspdfipaw49af8hs98fhas9d8fhap9w8fh"
+        let packedString = try! BPMsgPack.pack(string)
+        print(packedString)
+        let unpacked = try! BPMsgUnpack.unpack(packedString, breadcrumb: "")
+        switch unpacked{
+        case .BPString(let s):
+            XCTAssert(string == s)
+        default:
+            XCTAssert(false, "\(unpacked) is not equal to \(string)")
+        }
+    }
+    
+    func testPackStringTwoByte() {
+        var string:String = ""
+        for _ in 1...UInt(UInt16.max) {
+            string += "a"
+        }
+        let packedString = try! BPMsgPack.pack(string)
+        print(packedString)
+        let unpacked = try! BPMsgUnpack.unpack(packedString, breadcrumb: "")
+        switch unpacked{
+        case .BPString(let s):
+            XCTAssert(string == s, "\(unpacked) is not equal to \(string)")
+        default:
+            XCTAssert(false, "\(unpacked) is not equal to \(string)")
+        }
+    }
+    
+    func testPackStringFourByte() {
+        var string:String = ""
+        for _ in 1...UInt(UInt16.max)+1 { //uint32.max is just too much
+            string += "a"
+        }
+        let packedString = try! BPMsgPack.pack(string)
+        print(packedString)
+        let unpacked = try! BPMsgUnpack.unpack(packedString, breadcrumb: "")
+        switch unpacked{
+        case .BPString(let s):
+            XCTAssert(string == s, "\(unpacked) is not equal to \(string)")
+        default:
+            XCTAssert(false, "\(unpacked) is not equal to \(string)")
+        }
     }
     
     func testPackBool() {
