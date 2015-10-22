@@ -21,6 +21,20 @@ class BytePressTests: XCTestCase {
         super.tearDown()
     }
     
+    func testBin8(){
+        let bin: [UInt8] = [0x9f, 0xff, 0x1f, 0xf]
+        let packedBin = try! BPMsgPack.pack(bin)
+        let unpacked = try! BPMsgUnpack.unpack(packedBin, breadcrumb: "")
+        switch unpacked {
+        case .BPData(let ct):
+            if let binarr = ct as? [UInt8] {
+                XCTAssert(bin == binarr, "\(unpacked) is not equal to \(bin)")
+            }
+        default:
+            XCTAssert(false, "\(unpacked) is not equal to \(bin)")
+        }
+    }
+    
     func testPackFixString() {
         let string = "don't fucking pack me"
         let packedString = try! BPMsgPack.pack(string)

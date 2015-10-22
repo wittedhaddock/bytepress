@@ -7,6 +7,8 @@
 //
 
 
+protocol ArrayType {}
+extension Array: ArrayType {} //used to check for bin/arr... better way to do this type check? (let x = as? [Any] --> doesn't work)
 
 public class BPMsgPack {
     public class func pack(item: Any) throws -> [UInt8] {
@@ -35,6 +37,10 @@ public class BPMsgPack {
             try packUInt(UInt(unsafeBitCast(item as! Float, UInt32.self)), bytesReceivingPackage: &bytes, overridingHeaderBytes: [0xca])
         case _ where item is Double:
             try packUInt(UInt(unsafeBitCast(item as! Double, UInt64.self)), bytesReceivingPackage: &bytes, overridingHeaderBytes: [0xcb])
+        case _ where item is ArrayType:
+            if let binArr = item as? [UInt8] {
+                try packBin(binArr, bytesReceivingPackage: &bytes)
+            }
         default:
             throw BytePressError.BadMagic(item)
         }
@@ -54,9 +60,18 @@ public class BPMsgPack {
         switch value {
         case 0...UInt(UInt8.max)/2:
             bytesReceivingPackage = [UInt8(value)]
+            
+            if overridingHeaderBytes != [0xc0] { //do this better
+                bytesReceivingPackage += overridingHeaderBytes
+            }
+            bytesReceivingPackage = bytesReceivingPackage.reverse()
             return
         case 0...UInt(UInt8.max):
             bytesReceivingPackage = [0xcc, UInt8(value)]
+            if overridingHeaderBytes != [0xc0] {
+                bytesReceivingPackage += overridingHeaderBytes
+            }
+            bytesReceivingPackage = bytesReceivingPackage.reverse()
             return
         case 0...UInt(UInt16.max):
             headerByte = 0xcd
@@ -98,13 +113,11 @@ public class BPMsgPack {
             headerByte = value < 0 ? 0xd3 : 0xcf
             strideLength = 64 - 8
         default:
-            strideLength = 0
-            headerByte = 0xc0
+            throw BytePressError.ArrayOutOfBounds(value, 0)
         }
         bytesReceivingPackage = [headerByte] + strideLength.stride(through: 0, by: -8).map({ i in
             return UInt8(truncatingBitPattern: (-value >> i))
         })
-
     }
     
     private class func packString(string: String, inout bytesReceivingPackage: [UInt8]) throws  {
@@ -128,6 +141,21 @@ public class BPMsgPack {
             throw BytePressError.ArrayOutOfBounds(Int(count), 0)
         }
         bytesReceivingPackage += string.utf8
-        
+    }
+    
+    private class func packBin(value: [UInt8], inout bytesReceivingPackage: [UInt8]) throws {
+        let len = UInt(value.count) // theoretically (msgpack spec disallows) , what if count is UInt32.max + 1 and greater?
+        var numBin: [UInt8] = [UInt8]() // do without initialization
+        switch len {
+        case 0...UInt(UInt8.max):
+            try packUInt(len, bytesReceivingPackage: &numBin, overridingHeaderBytes: [0xc4])
+        case 0...UInt(UInt16.max):
+            try packUInt(len, bytesReceivingPackage: &numBin, overridingHeaderBytes: [0xc5])
+        case 0...UInt(UInt32.max):
+            try packUInt(len, bytesReceivingPackage: &numBin, overridingHeaderBytes: [0xc6])
+        default:
+            throw BytePressError.UnsupportedType(value)
+        }
+        bytesReceivingPackage = numBin + value
     }
 }

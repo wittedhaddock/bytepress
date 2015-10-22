@@ -31,6 +31,8 @@ public class BPMsgUnpack {
             type = BytePressType.BPDouble(unsafeBitCast(try! unpackInt(data.dropFirst()), Double.self))
         case 0b10100000...0b10111111:
             type = BytePressType.BPString(try! unpackString(data.dropFirst(), withLength: UInt(header - 0b10100000)))
+            
+            //TODO: conflate each three part into a single case generalizing each of the 3 (8, 16, 32)
         case 0xd9:
             let numNonUTFParts = 2
             let num = data.prefix(numNonUTFParts)
@@ -45,7 +47,19 @@ public class BPMsgUnpack {
             let numNonUTFParts = 5
             let num = data.prefix(numNonUTFParts)
             type = BytePressType.BPString(try! unpackString(data.dropFirst(numNonUTFParts), withLength: UInt(try! unpackInt(num, ignoreFirstByte: true))))
+        case 0xc4:
+            let prefix = 2
+            let num = data.prefix(prefix)
+            type = BytePressType.BPData(try! unpackBin(data.dropFirst(prefix), withLength: UInt(try! unpackInt(num, ignoreFirstByte: true))))
             
+        case 0xc5:
+            let prefix = 3
+            let num = data.prefix(prefix)
+            type = BytePressType.BPData(try! unpackBin(data.dropFirst(prefix), withLength: UInt(try! unpackInt(num, ignoreFirstByte: true))))
+        case 0xc6:
+            let prefix = 5
+            let num = data.prefix(prefix)
+            type = BytePressType.BPData(try! unpackBin(data.dropFirst(prefix), withLength: UInt(try! unpackInt(num, ignoreFirstByte: true))))
         default:
             throw BytePressError.BadMagic(data)
         }
@@ -89,5 +103,24 @@ public class BPMsgUnpack {
             }
         }
     return str
+    }
+    
+    private class func unpackBin<T: SequenceType>(value: T, withLength length: UInt) throws -> [UInt8] {
+        var gen = value.generate()
+        var octetArr = [UInt8]()
+        for _ in 0..<length {
+            if let octet = gen.next() {
+                if let octetCasted = octet as? UInt8 {
+                    octetArr.append(octetCasted)
+                }
+                else {
+                    throw BytePressError.UnsupportedType(octet)
+                }
+            }
+            else {
+                throw BytePressError.BadLength(Int(length), 0)
+            }
+        }
+        return octetArr
     }
 }
