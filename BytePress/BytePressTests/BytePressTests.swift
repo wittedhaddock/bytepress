@@ -21,7 +21,7 @@ class BytePressTests: XCTestCase {
         super.tearDown()
     }
     
-    func testBin8(){
+    func testBin8() {
         let bin: [UInt8] = [0x9f, 0xff, 0x1f, 0xf]
         let packedBin = try! BPMsgPack.pack(bin)
         let unpacked = try! BPMsgUnpack.unpack(packedBin, breadcrumb: "")
@@ -33,6 +33,47 @@ class BytePressTests: XCTestCase {
         default:
             XCTAssert(false, "\(unpacked) is not equal to \(bin)")
         }
+    }
+    
+    func testBin16() {
+        var bin: [UInt8] = [0xff]
+        for _ in 0..<UInt(UInt16.max) - 1 {
+            bin += [0xff]
+        }
+        let packedBin = try! BPMsgPack.pack(bin)
+        let unpackedBin = try! BPMsgUnpack.unpack(packedBin, breadcrumb: "")
+        switch unpackedBin {
+        case .BPData(let ct):
+            if let binarr = ct as? [UInt8] {
+                XCTAssert(bin == binarr, "\(unpackedBin) is not equal to \(bin)")
+            }
+            else {
+                XCTAssert(false)
+            }
+        default:
+            XCTAssert(false)
+        }
+    }
+
+    func testBin32() {
+        var bin: [UInt8] = [0xff]
+        for _ in 0..<UInt(UInt16.max) {
+            bin += [0xff]
+        }
+        let packedBin = try! BPMsgPack.pack(bin)
+        let unpackedBin = try! BPMsgUnpack.unpack(packedBin, breadcrumb: "")
+        switch unpackedBin {
+        case .BPData(let ct):
+            if let binarr = ct as? [UInt8] {
+                XCTAssert(bin == binarr, "\(unpackedBin) is not equal to \(bin)")
+            }
+            else {
+                XCTAssert(false)
+            }
+        default:
+            XCTAssert(false)
+        }
+
     }
     
     func testPackFixString() {
