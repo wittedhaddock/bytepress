@@ -14,6 +14,24 @@ extension CollectionType {
 }
 
 public class BPMsgUnpack {
+    public class func valueFromBytePressType(type: BytePressType) -> AnyObject {
+        switch type{
+        case .BPInteger(let a):
+            return a
+        case .BPString(let a):
+            return a
+        case .BPFloat(let a):
+            return a
+        case .BPDouble(let a):
+            return a
+        case .BPData(let a):
+            return a as! AnyObject
+        case .BPArray(let a):
+            return a as AnyObject
+        default:
+            return 0
+        }
+    }
     public class func unpack<T: CollectionType where T.Generator.Element == UInt8>(data: T, breadcrumb: String) throws -> BytePressType {
         //assuming integer
         let type: BytePressType?
@@ -25,6 +43,8 @@ public class BPMsgUnpack {
             type = BytePressType.BPInteger(numericCast(try! unpackInt(data.dropFirst())))
         case 0xd0...0xd3:
             type = BytePressType.BPInteger(-1 * numericCast(try! unpackInt(data.dropFirst())))
+        case 0xcc:
+            type = BytePressType.BPInteger(numericCast(try! unpackInt(data.dropFirst())))
         case 0xca:
             type = BytePressType.BPFloat(unsafeBitCast(try! unpackInt(data.dropFirst()), Float.self))
         case 0xcb:
@@ -60,6 +80,10 @@ public class BPMsgUnpack {
             let prefix = 5
             let num = data.prefix(prefix)
             type = BytePressType.BPData(try! unpackBin(data.dropFirst(prefix), withLength: UInt(try! unpackInt(num, ignoreFirstByte: true))))
+        case 0b10010000...0b10011111:
+            let k = data.dropFirst() as! Slice<T.Generator.Element>
+            
+            type = BytePressType.BPArray(try! unpackArray(k, withLength: UInt(header) - 0b1001000))
         default:
             throw BytePressError.BadMagic(data)
         }
@@ -122,5 +146,17 @@ public class BPMsgUnpack {
             }
         }
         return octetArr
+    }
+    
+    private class func unpackArray<T: CollectionType>(value: T, withLength length: UInt) throws -> [AnyObject] {
+    
+    /*for subVal in value {
+            value.split(isSeparator: { (element) -> Bool in
+                print(element)
+            })
+            var appendage = Array(arrayLiteral: subVal)
+    
+        }*/
+        return []
     }
 }

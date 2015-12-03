@@ -21,6 +21,14 @@ class BytePressTests: XCTestCase {
         super.tearDown()
     }
     
+    func testArr8() {
+        let arr = [0xf] as Array<AnyObject> //why do I have to cast here???
+        let packedArr = try! BPMsgPack.pack(arr)
+        
+        let unpackedArr = try! BPMsgUnpack.unpack(packedArr, breadcrumb: "")
+        
+    }
+    
     func testBin8() {
         let bin: [UInt8] = [0x9f, 0xff, 0x1f, 0xf]
         let packedBin = try! BPMsgPack.pack(bin)
@@ -164,7 +172,18 @@ class BytePressTests: XCTestCase {
         default:
             XCTAssert(false, "what even is \(unpackedInt)")
         }
-       
+    }
+    
+    func testPackNegative8BitInt() {
+        let negative8 = Int(UInt8.max)
+        
+        let packed = try! BPMsgPack.pack(negative8)
+        let unpacked = try! BPMsgUnpack.unpack(packed, breadcrumb: "")
+        
+        let unpackedVersion = try! BPMsgUnpack.valueFromBytePressType(unpacked)
+
+        
+        
     }
     
     func testPerformanceExample() {

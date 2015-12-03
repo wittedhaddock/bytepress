@@ -12,4 +12,5 @@ public enum BytePressType {
     case BPFloat(Float)
     case BPDouble(Double)
     case BPData(CollectionType)
+    case BPArray(Array<AnyObject>)
 }

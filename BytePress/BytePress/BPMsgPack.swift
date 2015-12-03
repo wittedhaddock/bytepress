@@ -13,8 +13,7 @@ extension Array: ArrayType {} //used to check for bin/arr... better way to do th
 public class BPMsgPack {
     public class func pack(item: Any) throws -> [UInt8] {
         var appendage = [UInt8]()
-        return try! pack(item, appendedToBytes: &appendage)
-        
+        return try pack(item, appendedToBytes: &appendage)
     }
     public class func pack(item: Any, inout appendedToBytes bytesAppendage: [UInt8]) throws -> [UInt8] {
         print("item: \(item)")
@@ -29,6 +28,7 @@ public class BPMsgPack {
         case _ where item is UInt:
             try packUInt(item as! UInt, bytesReceivingPackage: &bytesAppendage)
         case _ where item is Int:
+            
             if let x = item as? Int {
                 if x > 0 {
                     try packUInt(UInt(x), bytesReceivingPackage: &bytesAppendage)
@@ -40,6 +40,7 @@ public class BPMsgPack {
             else {
                 throw BytePressError.BadMagic("something bizarre")
             }
+            
         case _ where item is Float:
             try packUInt(UInt(unsafeBitCast(item as! Float, UInt32.self)), bytesReceivingPackage: &bytesAppendage, overridingHeaderBytes: [0xca])
         case _ where item is Double:
@@ -50,7 +51,6 @@ public class BPMsgPack {
                 break
             }
             fallthrough
-       // case _ where item is Dictionary:
             
         case _ where item is Array<AnyObject>:
             try packArray(item as! Array<AnyObject>, bytesReceivingPackage: &bytesAppendage)
@@ -85,6 +85,7 @@ public class BPMsgPack {
             headerByte = 0xcf
             strideLength = 64 - 8
         default:
+            throw BytePressError.BadLength(Int(UInt8.max), 0)
             headerByte = 0xc0
             strideLength = 0
         }
