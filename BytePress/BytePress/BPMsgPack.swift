@@ -11,12 +11,11 @@ protocol ArrayType {}
 extension Array: ArrayType {} //used to check for bin/arr... better way to do this type check? (let x = as? [Any] --> doesn't work)
 
 public class BPMsgPack {
-    public class func pack(item: Any) throws -> [UInt8] {
+    public class func pack<T: Any>(item: T) throws -> [UInt8] {
         var appendage = [UInt8]()
         return try pack(item, appendedToBytes: &appendage)
     }
     public class func pack(item: Any, inout appendedToBytes bytesAppendage: [UInt8]) throws -> [UInt8] {
-        print("item: \(item)")
         switch item {
         case _ where item is String:
             try packString(item as! String, bytesReceivingPackage: &bytesAppendage)
@@ -53,7 +52,7 @@ public class BPMsgPack {
             fallthrough
             
         case _ where item is Array<AnyObject>:
-            try packArray(item as! Array<AnyObject>, bytesReceivingPackage: &bytesAppendage)
+            try packArray(item as! Array<Any>, bytesReceivingPackage: &bytesAppendage)
         default:
             throw BytePressError.BadMagic(item)
         }
@@ -86,8 +85,6 @@ public class BPMsgPack {
             strideLength = 64 - 8
         default:
             throw BytePressError.BadLength(Int(UInt8.max), 0)
-            headerByte = 0xc0
-            strideLength = 0
         }
         
         bytesReceivingPackage += overridingHeaderBytes == [0xc0] ? [headerByte] : overridingHeaderBytes + strideLength.stride(through: 0, by: -8).map({ i in
@@ -162,7 +159,7 @@ public class BPMsgPack {
         bytesReceivingPackage += numBin + value
     }
     
-    private class func packArray(value: Array<AnyObject>, inout bytesReceivingPackage: [UInt8]) throws {
+    private class func packArray(value: Array<Any>, inout bytesReceivingPackage: [UInt8]) throws {
         let len = UInt(value.count)
         let header: [UInt8]
         switch len {

@@ -8,10 +8,13 @@
 
 import Swift
 
-extension SequenceType where Generator.Element ==  UInt8{}
-extension CollectionType {
-
+protocol BytePressByteArray: CollectionType {
+    subscript(subRange: Range<Int>) -> ArraySlice<Self.Generator.Element> { get }
+    //blah blah more functional requirements here
 }
+extension Array: BytePressByteArray{}
+
+
 
 public class BPMsgUnpack {
     public class func valueFromBytePressType(type: BytePressType) -> AnyObject {
@@ -32,7 +35,8 @@ public class BPMsgUnpack {
             return 0
         }
     }
-    public class func unpack<T: CollectionType where T.Generator.Element == UInt8>(data: T, breadcrumb: String) throws -> BytePressType {
+    public class func unpack<T: CollectionType where T.SubSequence: CollectionType, T.SubSequence.Generator.Element == T.Generator.Element, T.SubSequence.SubSequence == T.SubSequence, T.Generator.Element == UInt8>
+(data: T, breadcrumb: String) throws -> BytePressType {
         //assuming integer
         let type: BytePressType?
         let header: UInt8 = data.first!
@@ -81,8 +85,7 @@ public class BPMsgUnpack {
             let num = data.prefix(prefix)
             type = BytePressType.BPData(try! unpackBin(data.dropFirst(prefix), withLength: UInt(try! unpackInt(num, ignoreFirstByte: true))))
         case 0b10010000...0b10011111:
-            let k = data.dropFirst() as! Slice<T.Generator.Element>
-            
+            let k = Array(data.dropFirst())
             type = BytePressType.BPArray(try! unpackArray(k, withLength: UInt(header) - 0b1001000))
         default:
             throw BytePressError.BadMagic(data)
@@ -148,15 +151,23 @@ public class BPMsgUnpack {
         return octetArr
     }
     
-    private class func unpackArray<T: CollectionType>(value: T, withLength length: UInt) throws -> [AnyObject] {
+    private class func unpackArray<T: BytePressByteArray where T.Generator.Element == UInt8>(value: T, withLength length: UInt) throws -> [AnyObject] {
     
-    /*for subVal in value {
-            value.split(isSeparator: { (element) -> Bool in
-                print(element)
-            })
-            var appendage = Array(arrayLiteral: subVal)
+        var b: Array<AnyObject> = [AnyObject]()
+        let range = Range(start: 0, end: 1)
+        for _ in value {
+            let c = valueFromBytePressType(try! unpack(value[range], breadcrumb: ""))
+
+            b.append(c)
+        }
+        
+        
+        
+        
+        
+      //  print(c)
+        
     
-        }*/
-        return []
+        return b
     }
 }
