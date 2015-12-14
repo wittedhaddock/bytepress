@@ -22,8 +22,9 @@ class BytePressTests: XCTestCase {
     }
     
     func testArr8() {
-        let arr = [0xf] as Array<AnyObject> //why do I have to cast here???
-        let packedArr = try! BPMsgPack.pack(arr)
+        let arr = [0xffff, "b       o        b", false] as Array<AnyObject> //why do I have to cast here???
+        let packedArr = try! BPMsgPack.pack([0])
+        
         
         let unpackedArr = try! BPMsgUnpack.unpack(packedArr, breadcrumb: "")
         
