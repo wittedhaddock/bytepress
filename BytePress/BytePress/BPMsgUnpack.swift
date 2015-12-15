@@ -154,20 +154,27 @@ public class BPMsgUnpack {
     private class func unpackArray<T: BytePressByteArray where T.Generator.Element == UInt8>(value: T, withLength length: UInt) throws -> [AnyObject] {
     
         var b: Array<AnyObject> = [AnyObject]()
-        let range = Range(start: 0, end: 1)
-        for _ in value {
+        for i in value {
+            let range = Range(start: 0, end: correspondingLengthToByte(i))
             let c = valueFromBytePressType(try! unpack(value[range], breadcrumb: ""))
 
             b.append(c)
         }
-        
-        
-        
-        
-        
-      //  print(c)
-        
-    
         return b
+    }
+    
+    private class func correspondingLengthToByte(byte: UInt8) -> Int {
+        //includes header: i.e. bool is 1, nil is 1, uint8 is 2
+        switch byte {
+        case 0x00...0xc3:
+            return 1
+        case 0xcc, 0xd0:
+            return 2
+        case 0xcd, 0xd1:
+            return 3
+        default:
+            return 0
+        
+        }
     }
 }

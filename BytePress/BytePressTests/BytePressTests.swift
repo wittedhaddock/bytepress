@@ -23,11 +23,11 @@ class BytePressTests: XCTestCase {
     
     func testArr8() {
        // let arr:Array<AnyObject>  = [0xffff, "b       o        b", false] as  //why do I have to cast here???
-        let arr: Array<Any> = [0]
+        let arr: Array<Any> = [Int(UInt16.max)]
         let packedArr = try! BPMsgPack.pack(arr)
         
         
-        let unpackedArr = try! BPMsgUnpack.unpack(packedArr, breadcrumb: "")
+   //     let unpackedArr = try! BPMsgUnpack.unpack(packedArr, breadcrumb: "")
         
     }
     
@@ -184,6 +184,14 @@ class BytePressTests: XCTestCase {
         
         let unpackedVersion = try! BPMsgUnpack.valueFromBytePressType(unpacked)
 
+        
+        
+    }
+    
+    func testPack16BitInt(){
+        let value = Int(UInt16.max)
+        let packed = try! BPMsgPack.pack(value)
+        XCTAssert(packed == [205, 255, 255])
         
         
     }

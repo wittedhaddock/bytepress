@@ -51,7 +51,7 @@ public class BPMsgPack {
             }
             fallthrough
             
-        case _ where item is Array<AnyObject>:
+        case _ where item is Array<Any>:
             try packArray(item as! Array<Any>, bytesReceivingPackage: &bytesAppendage)
         default:
             throw BytePressError.BadMagic(item)
@@ -76,7 +76,7 @@ public class BPMsgPack {
             return
         case 0...UInt(UInt16.max):
             headerByte = 0xcd
-            strideLength = 16 - 8
+            strideLength = 8
         case 0...UInt(UInt32.max):
             headerByte = 0xce
             strideLength = 32 - 8
@@ -87,10 +87,12 @@ public class BPMsgPack {
             throw BytePressError.BadLength(Int(UInt8.max), 0)
         }
         
-        bytesReceivingPackage += overridingHeaderBytes == [0xc0] ? [headerByte] : overridingHeaderBytes + strideLength.stride(through: 0, by: -8).map({ i in
+        bytesReceivingPackage += (overridingHeaderBytes == [0xc0] ? [headerByte] : overridingHeaderBytes) + strideLength.stride(through: 0, by: -8).map({ i in
+           
             return UInt8(truncatingBitPattern: value >> i)
         })
     }
+    
     private class func packInt(value: Int, inout bytesReceivingPackage: [UInt8]) throws {
         let headerByte: UInt8
         let strideLength: Int
