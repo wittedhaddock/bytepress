@@ -10,6 +10,7 @@ import Swift
 
 protocol BytePressByteArray: CollectionType {
     subscript(subRange: Range<Int>) -> ArraySlice<Self.Generator.Element> { get }
+    subscript(index: Int) -> Self.Generator.Element { get }
     //blah blah more functional requirements here
 }
 extension Array: BytePressByteArray{}
@@ -152,13 +153,22 @@ public class BPMsgUnpack {
     }
     
     private class func unpackArray<T: BytePressByteArray where T.Generator.Element == UInt8>(value: T, withLength length: UInt) throws -> [AnyObject] {
-    
         var b: Array<AnyObject> = [AnyObject]()
-        for i in value {
-            let range = Range(start: 0, end: correspondingLengthToByte(i))
-            let c = valueFromBytePressType(try! unpack(value[range], breadcrumb: ""))
+        var range = Range(start: 0, end: correspondingLengthToByte(value.first!))
+        
 
+        //below implementation seems kluge to me... there's probably a more elegant functional alternative
+        for _ in 0..<value.count.hashValue {
+            print("value: \(value) range: \(range)")
+            let c = valueFromBytePressType(try! unpack(value[range], breadcrumb: ""))
             b.append(c)
+            range.startIndex = range.endIndex
+            if range.startIndex < value.count.hashValue {
+                range.endIndex = range.startIndex + correspondingLengthToByte(value[range.startIndex])
+            }
+            else {
+                break
+            }
         }
         return b
     }
@@ -172,6 +182,10 @@ public class BPMsgUnpack {
             return 2
         case 0xcd, 0xd1:
             return 3
+        case 0xce, 0xca:
+            return 5
+        case 0xcb, 0xd3:
+            return 9
         default:
             return 0
         

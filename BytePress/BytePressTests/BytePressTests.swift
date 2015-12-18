@@ -23,11 +23,11 @@ class BytePressTests: XCTestCase {
     
     func testArr8() {
        // let arr:Array<AnyObject>  = [0xffff, "b       o        b", false] as  //why do I have to cast here???
-        let arr: Array<Any> = [Int(UInt16.max)]
+        let arr: Array<Any> = [Int(UInt16.max), Int(UInt32.max), -200000, 23423423, 234.234]
         let packedArr = try! BPMsgPack.pack(arr)
         
         
-   //     let unpackedArr = try! BPMsgUnpack.unpack(packedArr, breadcrumb: "")
+        let unpackedArr = try! BPMsgUnpack.unpack(packedArr, breadcrumb: "")
         
     }
     
