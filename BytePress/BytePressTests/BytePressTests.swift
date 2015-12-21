@@ -21,13 +21,29 @@ class BytePressTests: XCTestCase {
         super.tearDown()
     }
     
-    func testArr8() {
+    func testArrUInt() {
        // let arr:Array<AnyObject>  = [0xffff, "b       o        b", false] as  //why do I have to cast here???
-        let arr: Array<Any> = [Int(UInt16.max), Int(UInt32.max), -200000, 23423423, 234.234]
+        let arr = [Int(UInt16.max), Int(UInt32.max), 200000, 23423423]
         let packedArr = try! BPMsgPack.pack(arr)
         
         
         let unpackedArr = try! BPMsgUnpack.unpack(packedArr, breadcrumb: "")
+    /*    switch unpackedArr {
+       case .BPArray(let arr2):
+      //  if let arr2Int = arr2{
+            for i in 0..<arr.count {
+                XCTAssert(arr[i] == arr2[i], " initial array: \(arr) not equal to unpacked: \(unpackedArr)")
+        //    }
+        }
+        else {
+            XCTAssert(false, "array, \(arr2) came in as int, and out as something else")
+            
+            }
+            
+        default:
+            XCTAssert(false, "initial array: \(arr) not equal to unpacked: \(unpackedArr)")
+        }*/
+        
         
     }
     

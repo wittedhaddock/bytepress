@@ -161,6 +161,11 @@ public class BPMsgPack {
         bytesReceivingPackage += numBin + value
     }
     
+    
+    /**
+     @abstract: 
+     packs arrays of containing any other MSGPack types 
+     */
     private class func packArray(value: Array<Any>, inout bytesReceivingPackage: [UInt8]) throws {
         let len = UInt(value.count)
         let header: [UInt8]
