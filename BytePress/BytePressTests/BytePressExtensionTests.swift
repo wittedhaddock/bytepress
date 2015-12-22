@@ -27,6 +27,9 @@ class BytePressExtensionTests: XCTestCase {
         
         let value2 = try! BPMsgPack.pack(Int(Int32.max))
         
+        let val = try! UInt(UInt64.max).pack()
+        
+        let upval = try! BPMsgUnpack.unpack(val, breadcrumb: "")
         
         
     }

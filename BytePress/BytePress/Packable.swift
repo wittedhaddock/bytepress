@@ -8,12 +8,25 @@
 
 
 public protocol Packable {
-    func pack() throws -> [UInt8]
+    func pack(overridingHeaderBytes: [UInt8]) throws -> [UInt8]
+}
+
+extension UInt : Packable {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] {
+        if self > UInt(Int64.max) && self <= UInt(UInt64.max) {
+            return [0xcf] + (64 - 8).stride(through: 0, by: -8).map({ i in
+                return UInt8(truncatingBitPattern: self >> i) // should be encapsulated elsewhere to DRY
+            })
+        }
+        else {
+            return try! Int(self).pack()
+        }
+    }
 }
 
 extension Int : Packable {
-    public func pack() throws -> [UInt8] {
-        if self < Int(Int.max) && self > Int(Int.min) {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] {
+        if self > Int(Int.min) && self < 0{
             var bytesReceivingPackage = [UInt8]()
             let headerByte: UInt8
             let strideLength: Int
@@ -43,6 +56,36 @@ extension Int : Packable {
             })
             return bytesReceivingPackage
         }
+        else if self < Int(Int.max){
+            var bytesReceivingPackage = [UInt8]()
+            let headerByte: UInt8
+            let strideLength: UInt
+            switch self {
+            case 0...Int(Int8.max):
+                bytesReceivingPackage += overridingHeaderBytes == [0xc0] ? [UInt8(self)] : overridingHeaderBytes + [UInt8(self)]
+                return bytesReceivingPackage
+            case 0...Int(UInt8.max):
+                bytesReceivingPackage += overridingHeaderBytes == [0xc0] ? [0xcc, UInt8(self)] : overridingHeaderBytes + [UInt8(self)]
+                return bytesReceivingPackage
+            case 0...Int(UInt16.max):
+                headerByte = 0xcd
+                strideLength = 8
+            case 0...Int(UInt32.max):
+                headerByte = 0xce
+                strideLength = 32 - 8
+            case 0..<Int(Int64.max):
+                headerByte = 0xcf
+                strideLength = 64 - 8
+            default:
+                throw BytePressError.BadLength(Int(UInt8.max), 0)
+            }
+            
+            bytesReceivingPackage += (overridingHeaderBytes == [0xc0] ? [headerByte] : overridingHeaderBytes) + strideLength.stride(through: 0, by: -8).map({ i in
+                
+                return UInt8(truncatingBitPattern: self >> Int(i))
+            })
+            return bytesReceivingPackage
+        }
         throw BytePressError.UnsupportedType(self)
     }
 }
@@ -52,7 +95,7 @@ extension Array where Element: Packable{
         if self.count < 15 { /* */}
         var byteArray: [UInt8] = []
         for elem in self {
-            byteArray += try! elem.pack()
+          //  byteArray += try! elem.pack()
         }
         return byteArray//todo: msgpack
     }
