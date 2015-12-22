@@ -90,6 +90,31 @@ extension Int : Packable {
     }
 }
 
+extension String : Packable {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] {
+        //TODO error handling for counts bigger than 255
+        var bytesReceivingPackage = [UInt8]()
+        let headerBytes: [UInt8]
+        let count = UInt(self.utf8.count)
+        switch count {
+        case _ where count <= 0x1f:
+            headerBytes = [0b10100000 | UInt8(count)]
+            return headerBytes + self.utf8
+        case _ where count <= 0xff:
+            headerBytes = [0xd9]
+            return headerBytes + [UInt8(count)] + self.utf8
+
+        case _ where count <= 0xff_ff:
+            bytesReceivingPackage += try! count.pack([0xda])
+        case _ where count <= 0xff_ff_ff_ff:
+            bytesReceivingPackage += try! count.pack([0xdb])
+        default:
+            throw BytePressError.ArrayOutOfBounds(Int(count), 0)
+        }
+        return bytesReceivingPackage + self.utf8
+    }
+}
+
 extension Array where Element: Packable{
     func pack() -> [UInt8] {
         if self.count < 15 { /* */}
