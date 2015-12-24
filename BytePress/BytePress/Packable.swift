@@ -19,7 +19,7 @@ extension UInt : Packable {
             })
         }
         else {
-            return try! Int(self).pack()
+            return try! Int(self).pack(overridingHeaderBytes)
         }
     }
 }
@@ -116,13 +116,12 @@ extension String : Packable {
 }
 
 
-extension Array where Element : UInt8 {}
-extension Array where Element : Packable {
+extension CollectionType where Generator.Element == UInt8 {
     
     public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] {
 
         var bytesReceivingPackage = [UInt8]()
-        let len = UInt(self.count) // theoretically (msgpack spec disallows) , what if count is UInt32.max + 1 and greater?
+        let len = UInt(self.count.hashValue) // theoretically (msgpack spec disallows) , what if count is UInt32.max + 1 and greater?
         switch len {
         case 0...UInt(UInt8.max):
             bytesReceivingPackage += try! len.pack([0xc4])
@@ -133,7 +132,7 @@ extension Array where Element : Packable {
         default:
             throw BytePressError.UnsupportedType(self)
         }
-        return bytesReceivingPackage + self.
+        return bytesReceivingPackage + self
     }
 }
 
