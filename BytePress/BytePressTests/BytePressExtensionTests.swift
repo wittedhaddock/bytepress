@@ -34,6 +34,14 @@ class BytePressExtensionTests: XCTestCase {
         
     }
     
+    func testStringPack() {
+        let string = "WHAt is tHIS"
+        let stringValue = try! string.pack()
+        let stringValue2 = try! BPMsgPack.pack(string)
+        XCTAssert(stringValue == stringValue2)
+        
+    }
+    
     func testExample() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
