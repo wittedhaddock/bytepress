@@ -31,14 +31,25 @@ class BytePressExtensionTests: XCTestCase {
         
         let upval = try! BPMsgUnpack.unpack(val, breadcrumb: "")
         
-        
     }
     
+    func testBin8() {
+        var bin : [UInt8] = [0xff, 0xcc, 0xbb, 0xaa, 0xdd, 0xf1]
+        let a = try! bin.pack()
+        
+    }
+        
     func testStringPack() {
         let string = "WHAt is tHIS"
         let stringValue = try! string.pack()
         let stringValue2 = try! BPMsgPack.pack(string)
         XCTAssert(stringValue == stringValue2)
+        
+    }
+    
+    func testFloatPack() {
+        let floatValue = 1.0 as Float
+        let packedValue = try! floatValue.pack()
         
     }
     

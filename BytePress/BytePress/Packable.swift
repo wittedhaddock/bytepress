@@ -12,15 +12,27 @@ public protocol Packable {
 }
 
 extension UInt : Packable {
-    public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] {
-        if self > UInt(Int64.max) && self <= UInt(UInt64.max) {
-            return [0xcf] + (64 - 8).stride(through: 0, by: -8).map({ i in
+    public func pack(overridingHeaderBytes: [UInt8] = [0xcf]) throws -> [UInt8] {
+        if self > UInt(Int64.max) && self <= UInt(UInt64.max) { //not sure
+            return overridingHeaderBytes + (64 - 8).stride(through: 0, by: -8).map({ i in
                 return UInt8(truncatingBitPattern: self >> i) // should be encapsulated elsewhere to DRY
             })
         }
         else {
             return try! Int(self).pack(overridingHeaderBytes)
         }
+    }
+}
+
+extension UInt32 : Packable { //same as UInt extension... better solution?
+    public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] { // header byte?
+        return try! UInt(self).pack()
+    }
+}
+
+extension UInt64 : Packable {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] { // header byte?
+        return try! UInt(self).pack() // if self is bigger than UInt32...
     }
 }
 
@@ -90,6 +102,19 @@ extension Int : Packable {
     }
 }
 
+extension Float : Packable {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xca]) throws -> [UInt8] {
+        let a = unsafeBitCast(self, UInt32.self)
+        return try! a.pack(overridingHeaderBytes)
+    }
+}
+
+extension Double : Packable {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xcb]) throws -> [UInt8] {
+        let a = unsafeBitCast(self, UInt64.self)
+        return try! a.pack(overridingHeaderBytes)
+    }
+}
 extension String : Packable {
     public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] {
         //TODO error handling for counts bigger than 255
@@ -103,7 +128,6 @@ extension String : Packable {
         case _ where count <= 0xff:
             headerBytes = [0xd9]
             return headerBytes + [UInt8(count)] + self.utf8
-
         case _ where count <= 0xff_ff:
             bytesReceivingPackage += try! count.pack([0xda])
         case _ where count <= 0xff_ff_ff_ff:
@@ -119,7 +143,6 @@ extension String : Packable {
 extension CollectionType where Generator.Element == UInt8 {
     
     public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] {
-
         var bytesReceivingPackage = [UInt8]()
         let len = UInt(self.count.hashValue) // theoretically (msgpack spec disallows) , what if count is UInt32.max + 1 and greater?
         switch len {
@@ -135,6 +158,8 @@ extension CollectionType where Generator.Element == UInt8 {
         return bytesReceivingPackage + self
     }
 }
+
+
 
 extension Array where Element: Packable{
     func pack() -> [UInt8] {
