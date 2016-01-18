@@ -11,6 +11,12 @@ public protocol Packable {
     func pack(overridingHeaderBytes: [UInt8]) throws -> [UInt8]
 }
 
+extension Bool : Packable {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] {
+        return [self ? 0xc3 : 0xc2]
+    }
+}
+
 extension UInt : Packable {
     public func pack(overridingHeaderBytes: [UInt8] = [0xcf]) throws -> [UInt8] {
         if self > UInt(Int64.max) && self <= UInt(UInt64.max) { //not sure
@@ -24,15 +30,27 @@ extension UInt : Packable {
     }
 }
 
+extension UInt8 : Packable {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] {
+        return self < 127 ? [self] : [0xcc, self]
+    }
+}
+
+extension UInt16 : Packable {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xcd]) throws -> [UInt8] {
+        return try! UInt(self).pack(overridingHeaderBytes)
+    }
+}
+
 extension UInt32 : Packable { //same as UInt extension... better solution?
-    public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] { // header byte?
-        return try! UInt(self).pack()
+    public func pack(overridingHeaderBytes: [UInt8] = [0xce]) throws -> [UInt8] { // header byte?
+        return try! UInt(self).pack(overridingHeaderBytes)
     }
 }
 
 extension UInt64 : Packable {
-    public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] { // header byte?
-        return try! UInt(self).pack() // if self is bigger than UInt32...
+    public func pack(overridingHeaderBytes: [UInt8] = [0xcf]) throws -> [UInt8] { // header byte?
+        return try! UInt(self).pack(overridingHeaderBytes) // if self is bigger than UInt32...
     }
 }
 
@@ -138,7 +156,6 @@ extension String : Packable {
         return bytesReceivingPackage + self.utf8
     }
 }
-
 
 extension CollectionType where Generator.Element == UInt8 {
     

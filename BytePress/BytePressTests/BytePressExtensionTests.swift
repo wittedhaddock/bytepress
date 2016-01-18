@@ -22,6 +22,54 @@ class BytePressExtensionTests: XCTestCase {
     }
 
     
+    func testNil() {
+    /*    let a = Int(nil as Int)
+        a.pack()
+        print(a)*/
+    }
+    
+    func testTruePack() {
+        let a = true
+        let packed = try! a.pack()
+        XCTAssert(packed == [0xc3])
+    }
+    
+    func testFalsePack() {
+        let a = false
+        let packed = try! a.pack()
+        XCTAssert(packed == [0xc2])
+    }
+    
+    func testPackFixuint() {
+        let a = (UInt8.max / 2) - 1
+        let packed = try! a.pack()
+        XCTAssert([a] == packed, "fixint \(a) must equal packed \(packed)")
+    }
+    
+    func testPack8bitUInt() {
+        let a = UInt8.max
+        let packed = try! a.pack()
+        XCTAssert([0xcc, a] == packed, "8bit int \(a) must equal packed \(packed)")
+    }
+    
+    func testPack16bitUInt () {
+        let a = UInt16.max
+        let packed = try! a.pack()
+        XCTAssert([0xcd, 0xff, 0xff] == packed, "16bit int \(a) must equal packed \(packed)")
+    }
+    
+    func testPack32bitUInt() {
+        let a = UInt32.max
+        let packed = try! a.pack()
+        XCTAssert([0xce, 0xff, 0xff, 0xff, 0xff] == packed, "32bit int \(a) must equal packed \(packed)")
+    }
+    
+    func testPack64BitUInt() {
+        let a = UInt64.max
+        let packed = try! a.pack()
+        XCTAssert([0xcf, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff] == packed, "64bit int \(a) must equal packed \(packed)")
+    }
+    
     func testUInt32Max() {
         let value = try! Int(Int32.max).pack()
         
