@@ -94,21 +94,68 @@ class BytePressExtensionTests: XCTestCase {
         XCTAssert([0xd3, 128, 0, 0, 0, 0, 0, 0, 0] == packed, "64bit int \(a) must equal packed \(packed)")
     }
     
-    func testUInt32Max() {
-        let value = try! Int(Int32.max).pack()
-        
-        let value2 = try! BPMsgPack.pack(Int(Int32.max))
-        
-        let val = try! UInt(UInt64.max).pack()
-        
-        let upval = try! BPMsgUnpack.unpack(val, breadcrumb: "")
-        
+    func testPack32BitFloat() {
+        let a: Float32 = 5.0000
+        let packed = try! a.pack()
+        print(packed)
+        exit(1)
+        // XCTAssert([0xca, ])
+    }
+    
+    func testPack64BitFloat() {
+        let a: Double = 5.0
+        let packed = try! a.pack()
+        print(packed)
+        exit(1)
+    }
+    
+    func testFixStringPack() {
+        let a = "abcdefghijklmnopqrstuvwxyz"
+        let packed = try! a.pack()
+        XCTAssert([UInt8(0b10100000 | a.utf8.count)] + [UInt8](a.utf8) == packed, "fixstring \(a) must equal packed \(packed)")
+    }
+    
+    func testPack8BitString() {
+        let a = String(count: Int(UInt8.max), repeatedValue: Character("a"))
+        let packed = try! a.pack()
+        XCTAssert([0xd9, UInt8(a.utf8.count)] + [UInt8](a.utf8) == packed, "8bit string \(a) must equal packed \(packed)")
+    }
+    
+    func testPack16BitString() {
+        let a = String(count: Int(UInt16.max), repeatedValue: Character("a"))
+        let packed = try! a.pack()
+        XCTAssert([0xda, 0xff, 0xff] + [UInt8](a.utf8) == packed, "16bit string \(a) must equal packed \(packed)")
+    }
+    
+    func testPack32BitString() {
+        //takes some time
+        let a = String(count: Int(UInt16.max) + 1, repeatedValue: Character("a"))
+        let packed = try! a.pack()
+        XCTAssert([0xdb, 0, 1, 0, 0] + [UInt8](a.utf8) == packed, "32bit string \(a) must equal packed \(packed)")
     }
     
     func testBin8() {
-        var bin : [UInt8] = [0xff, 0xcc, 0xbb, 0xaa, 0xdd, 0xf1]
-        let a = try! bin.pack()
-        
+        let a : [UInt8] = [0xff, 0xcc, 0xbb, 0xaa, 0xdd, 0xf1]
+        let packed = try! a.pack()
+        XCTAssert([0xc4, UInt8(a.count)] + a == packed, "8bit long byte array \(a) must equal packed \(packed)")
+    }
+    
+    func testBin16() {
+        var a: [UInt8] = [0xf0]
+        for _ in 0..<UInt(UInt16.max) - 1 {
+            a += [0xf0]
+        }
+        let packed = try! a.pack()
+        XCTAssert([0xc5, 0xff, 0xff] + a == packed, "16bit long byte array \(a) must equal packed \(packed)")
+    }
+    
+    func testBin32() {
+        var a: [UInt8] = [0xf0]
+        for _ in 0..<UInt(UInt16.max) {
+            a += [0xf0]
+        }
+        let packed = try! a.pack()
+        XCTAssert([0xc6, 0, 1, 0, 0] + a == packed, "32bit long byte array \(a) must equal packed \(packed)")
     }
         
     func testStringPack() {
@@ -116,7 +163,6 @@ class BytePressExtensionTests: XCTestCase {
         let stringValue = try! string.pack()
         let stringValue2 = try! BPMsgPack.pack(string)
         XCTAssert(stringValue == stringValue2)
-        
     }
     
     func testFloatPack() {
