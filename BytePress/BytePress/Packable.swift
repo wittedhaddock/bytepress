@@ -31,8 +31,8 @@ extension UInt : Packable {
 }
 
 extension UInt8 : Packable {
-    public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] {
-        return self < 127 ? [self] : [0xcc, self]
+    public func pack(overridingHeaderBytes: [UInt8] = [0xcc]) throws -> [UInt8] {
+        return self < 127 ? [self] : (overridingHeaderBytes + [self])
     }
 }
 
@@ -56,7 +56,7 @@ extension UInt64 : Packable {
 
 extension Int : Packable {
     public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] {
-        if self > Int(Int.min) && self < 0{
+        if self > Int(Int.min) && self < 0 {
             var bytesReceivingPackage = [UInt8]()
             let headerByte: UInt8
             let strideLength: Int
@@ -117,6 +117,30 @@ extension Int : Packable {
             return bytesReceivingPackage
         }
         throw BytePressError.UnsupportedType(self)
+    }
+}
+
+extension Int8 : Packable {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xd0]) throws -> [UInt8] {
+        return try! unsafeBitCast(self, UInt8.self).pack(overridingHeaderBytes)
+    }
+}
+
+extension Int16 : Packable {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xd1]) throws -> [UInt8] {
+        return try! unsafeBitCast(self, UInt16.self).pack(overridingHeaderBytes)
+    }
+}
+
+extension Int32 : Packable {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xd2]) throws -> [UInt8] {
+        return try! unsafeBitCast(self, UInt32.self).pack(overridingHeaderBytes)
+    }
+}
+
+extension Int64 : Packable {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xd3]) throws -> [UInt8] {
+        return try! unsafeBitCast(self, UInt64.self).pack(overridingHeaderBytes)
     }
 }
 
