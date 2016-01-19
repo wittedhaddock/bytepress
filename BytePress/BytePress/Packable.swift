@@ -151,6 +151,13 @@ extension Float : Packable {
     }
 }
 
+/*extension Float32 : Packable {
+    public func pack(overridingHeaderbytes: [UInt8] = [0xca]) throws -> [UInt8] {
+        return try! Float(self).pack()
+
+    }
+} same as Float */
+
 extension Double : Packable {
     public func pack(overridingHeaderBytes: [UInt8] = [0xcb]) throws -> [UInt8] {
         let a = unsafeBitCast(self, UInt64.self)
@@ -202,20 +209,85 @@ extension CollectionType where Generator.Element == UInt8 {
 
 
 
-extension Array where Element: Packable{
-    func pack() -> [UInt8] {
-        if self.count < 15 { /* */}
+
+/*extension Array:Packable where Element: Packable{
+    func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] {
+        let header: UInt8
+
+        if self.count < 0b10010000 {
+            header = UInt8(0b10010000 | self.count)
+        }
+        else if self.count <= Int(UInt16.max) {
+            header = 0xdc
+        }
+        else if self.count <= Int(UInt32.max) {
+            header = 0xdd
+        }
+        else {
+            throw BytePressError.BadLength(0, self.count)
+        }
+        
         var byteArray: [UInt8] = []
         for elem in self {
-            byteArray += try! elem.pack([])
+            byteArray += try! elem.pack([0xc0])
         }
-        return byteArray//todo: msgpack
+        return [header] + byteArray//todo: msgpack
+    }
+}
+waiting for swift 3
+*/
+extension Array : Packable {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] {
+        let header: UInt8
+        
+        if self.count < 0b10010000 {
+            header = UInt8(0b10010000 | self.count)
+        }
+        else if self.count <= Int(UInt16.max) {
+            header = 0xdc
+        }
+        else if self.count <= Int(UInt32.max) {
+            header = 0xdd
+        }
+        else {
+            throw BytePressError.BadLength(0, self.count)
+        }
+        
+        var byteArray: [UInt8] = []
+        for elem in self {
+            if elem is Packable {
+                byteArray += try! (elem as! Packable).pack([0xc0])
+            }
+        }
+        return [header] + byteArray//todo: msgpack
     }
 }
 
-extension Array : Packable {
-    public func pack(overridingHeaderBytes: [UInt8]) throws -> [UInt8] {
-       return []// return self.pack()
+extension Dictionary : Packable {
+    public func pack(overridingHeaderBytes: [UInt8] = [0xc0]) throws -> [UInt8] {
+        let header : [UInt8]
+        if self.count < 16 {
+            header = [UInt8(0b10000000 | self.count)]
+        }
+        else if self.count <= Int(UInt16.max) {
+            header = try! UInt16(self.count).pack([0xde])
+        }
+        else if self.count <= Int(UInt32.max) {
+            header = try! UInt32(self.count).pack([0xdf])
+        }
+        else {
+            throw BytePressError.BadLength(0, self.count)
+        }
+        var byteArray: [UInt8] = []
+        for keyvalue in self {
+            if keyvalue.0 is Packable && keyvalue.1 is Packable{
+                byteArray += try! (keyvalue.0 as! Packable).pack([0xc0]) + (try! (keyvalue.1 as! Packable).pack([0xc0]))
+            }
+            else {
+                throw BytePressError.UnsupportedType(self)
+            }
+        }
+        return header + byteArray
     }
 }
 

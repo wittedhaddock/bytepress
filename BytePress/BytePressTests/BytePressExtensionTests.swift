@@ -158,13 +158,38 @@ class BytePressExtensionTests: XCTestCase {
         XCTAssert([0xc6, 0, 1, 0, 0] + a == packed, "32bit long byte array \(a) must equal packed \(packed)")
     }
         
-    func testStringPack() {
-        let string = "WHAt is tHIS"
-        let stringValue = try! string.pack()
-        let stringValue2 = try! BPMsgPack.pack(string)
-        XCTAssert(stringValue == stringValue2)
+    func testFixArrayPack() {
+        let b = UInt(UInt32.max)
+        let c = UInt(UInt16.max)
+        let a = [0, 10, 20, b, c]
+        let packed = try! a.pack()
+        let mirrored = [UInt8(0b10010000 | a.count), 0, 10, 20] +  (try! UInt32(b).pack()) + (try! UInt16(c).pack())
+        XCTAssert(mirrored == packed, "fixarray \(mirrored) must equal packed \(packed)")
     }
     
+    func test16BitArrayPack() {
+        var a = [0xff_ff]
+        for i in 0...UInt(UInt8.max) {
+            a += i % 2 == 0 ? [0xff_0f] : [0xf0]
+        }
+        let packed = try! a.pack()
+        exit(1)
+    }
+    
+    func test32BitArrayPack() {
+        var a = [0xff_ff]
+        for _ in 0...UInt(UInt16.max) {
+            a += [0xfa]
+        }
+        let packed = try! a.pack()
+        exit(1)
+    }
+    
+    func testFixMapPack() {
+        let a = Dictionary(dictionaryLiteral: ("a", "b"))
+        let packed = try! a.pack()
+        
+    }
     func testFloatPack() {
         let floatValue = 1.0 as Float
         let packedValue = try! floatValue.pack()
