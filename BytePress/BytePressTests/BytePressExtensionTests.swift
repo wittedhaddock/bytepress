@@ -182,6 +182,8 @@ class BytePressExtensionTests: XCTestCase {
             a += [0xfa]
         }
         let packed = try! a.pack()
+        let unpacked = try! BPMsgUnpack.unpack(packed, breadcrumb: "")
+        
         exit(1)
     }
     

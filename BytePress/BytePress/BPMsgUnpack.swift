@@ -85,7 +85,7 @@ public class BPMsgUnpack {
             let prefix = 5
             let num = data.prefix(prefix)
             type = BytePressType.BPData(try! unpackBin(data.dropFirst(prefix), withLength: UInt(try! unpackInt(num, ignoreFirstByte: true))))
-        case 0b10010000...0b10011111:
+        case 0b10010000...0b10011111, 0xdc, 0xdd:
             let k = Array(data.dropFirst())
             type = BytePressType.BPArray(try! unpackArray(k, withLength: UInt(header) - 0b1001000))
         default:

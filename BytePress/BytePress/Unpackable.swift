@@ -7,19 +7,10 @@
 //
 
 
-//proposal 1
-func unpack() ->  Any {
-    return 0
-}
-
-protocol Unpackable {
-    static func unpack(arr: [UInt8]) throws -> Self //Int.unpack([2,3,4,5])
-}
-
-//proposal 2
 
 
-/*enum BytePressUnpackable {
+
+enum BytePressUnpackable {
     case Int
     case String
     
@@ -27,15 +18,13 @@ protocol Unpackable {
         get {
             switch(self) {
             case .Int:
-                return BytePressType.BPInteger
+                return BytePressType.BPInteger(0)
             default:
-                abort()
+                return BytePressType.BPInteger(0)
             }
         }
     }
     
-    var int : Int? { abort() }
-    var string: String? { abort() }
-}*/
-
+   
+}
 //func unpack() -> BytePressType { abort()}
